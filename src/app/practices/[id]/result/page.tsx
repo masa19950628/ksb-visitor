@@ -17,10 +17,16 @@ export default async function ResultApplicationPage({
     const practice = await getPracticeById(id)
     if (!practice || practice.status !== "PUBLISHED") {
         return (
-            <div style={{ maxWidth: "600px", margin: "4rem auto", textAlign: "center" }}>
-                <h1 style={{ fontSize: "1.5rem", marginBottom: "1rem" }}>結果発表前</h1>
-                <p style={{ color: "var(--text-secondary)", marginBottom: "2rem" }}>この練習会の抽選結果はまだ公開されていません。</p>
-                <Link href="/" className="btn btn-primary">一覧へ戻る</Link>
+            <div className="max-w-md mx-auto mt-16 px-4 text-center">
+                <h1 className="text-xl font-semibold mb-4">結果発表前</h1>
+
+                <p className="text-gray-300 mb-8">
+                    この練習会の抽選結果はまだ公開されていません。
+                </p>
+
+                <Link href="/" className="btn btn-primary">
+                    一覧へ戻る
+                </Link>
             </div>
         )
     }
@@ -36,31 +42,45 @@ export default async function ResultApplicationPage({
             if (appWithParticipants) {
                 const isWinner = appWithParticipants.isWinner === true;
                 return (
-                    <div style={{ maxWidth: "600px", margin: "4rem auto", textAlign: "center" }}>
-                        <div className="glass-panel" style={{
-                            border: isWinner ? "2px solid #34d399" : "2px solid #ef4444",
-                            background: isWinner ? "rgba(16, 185, 129, 0.05)" : "rgba(239, 68, 68, 0.05)"
-                        }}>
-                            <h1 style={{ fontSize: "2.5rem", marginBottom: "1rem", color: isWinner ? "#34d399" : "#ef4444" }}>
+                    <div className="max-w-md mx-auto mt-16 px-4 text-center">
+                        <div
+                            className={`
+      glass-panel p-8 rounded-xl border-2
+      ${isWinner ? "border-green-400 bg-green-500/5" : "border-red-400 bg-red-500/5"}
+    `}
+                        >
+                            <h1
+                                className={`
+        text-4xl font-bold mb-4
+        ${isWinner ? "text-green-400" : "text-red-400"}
+      `}
+                            >
                                 {isWinner ? "🎉 当選 🎉" : "😢 落選"}
                             </h1>
-                            <p style={{ fontSize: "1.1rem", marginBottom: "2rem", color: "white" }}>
-                                {appWithParticipants.participants[0]?.name}  ({appWithParticipants.headcount}名)
+
+                            <p className="text-white text-lg mb-8">
+                                {appWithParticipants.participants[0]?.name}（{appWithParticipants.headcount}名）
                             </p>
 
                             {isWinner ? (
-                                <p style={{ color: "var(--text-secondary)", marginBottom: "2rem" }}>
-                                    おめでとうございます！練習会への参加が確定しました。<br />当日は気をつけてお越しください。
+                                <p className="text-gray-300 mb-8 leading-relaxed">
+                                    おめでとうございます！練習会への参加が確定しました。<br />
+                                    当日は気をつけてお越しください。
                                 </p>
                             ) : (
-                                <p style={{ color: "var(--text-secondary)", marginBottom: "2rem" }}>
-                                    誠に残念ながら、今回は定員を上回るお申し込みがあり、厳正なる抽選の結果、落選となりました。<br />またのご参加をお待ちしております。
+                                <p className="text-gray-300 mb-8 leading-relaxed">
+                                    誠に残念ながら、今回は定員を上回るお申し込みがあり、<br />
+                                    厳正なる抽選の結果、落選となりました。<br />
+                                    またのご参加をお待ちしております。
                                 </p>
                             )}
 
-                            <Link href="/" className="btn btn-secondary" style={{ width: "100%" }}>一覧へ戻る</Link>
+                            <Link href="/" className="btn btn-secondary w-full">
+                                一覧へ戻る
+                            </Link>
                         </div>
                     </div>
+
                 )
             }
         }

@@ -51,16 +51,16 @@ export default function UserLoginPage() {
     }
 
     return (
-        <div style={{ maxWidth: "400px", margin: "4rem auto" }}>
-            <div className="glass-panel">
-                <h1 className="page-title" style={{ textAlign: "center", marginBottom: "1rem" }}>ビジターログイン</h1>
+        <div className="max-w-sm mx-auto mt-20 px-4">
+            <div className="glass-panel rounded-xl">
+                <h1 className="page-title text-center mb-8">ログイン</h1>
 
                 <div className="form-group">
                     <label className="form-label">共通パスワード</label>
                     <input
                         type="password"
                         placeholder="パスワード"
-                        className="form-control"
+                        className="form-control w-full"
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
                         required
@@ -70,14 +70,16 @@ export default function UserLoginPage() {
                 <button
                     type="button"
                     onClick={handleLogin}
-                    className="btn btn-primary"
-                    style={{ width: "100%", marginTop: "1rem" }}
+                    className="btn btn-primary w-full py-3 mt-4"
                 >
                     {loading ? "ログイン中..." : "ログイン"}
                 </button>
 
-                {error && <p className="text-red-500 text-sm mb-2">{error}</p>}
+                {error && (
+                    <p className="text-red-500 text-sm mt-4 text-center">{error}</p>
+                )}
             </div>
         </div>
+
     );
 }

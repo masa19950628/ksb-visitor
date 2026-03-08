@@ -13,32 +13,43 @@ export default async function NewPracticePage({
     const params = await searchParams;
 
     return (
-        <div style={{ maxWidth: "600px", margin: "2rem auto" }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "2rem" }}>
-                <h1 className="page-title" style={{ margin: 0 }}>練習 新規作成</h1>
+        <div className="max-w-xl mx-auto my-8 px-4">
+            {/* タイトル行 */}
+            <div className="flex flex-wrap justify-between items-center mb-8 gap-4">
+                <h1 className="page-title m-0">練習 新規作成</h1>
                 <Link href="/admin" className="btn btn-secondary">
                     キャンセル
                 </Link>
             </div>
 
-            <div className="glass-panel">
+            <div className="glass-panel p-6 rounded-xl">
+                {/* エラー表示 */}
                 {params?.error && (
-                    <div style={{ padding: "0.75rem", background: "rgba(239, 68, 68, 0.2)", border: "1px solid #ef4444", borderRadius: "8px", color: "#fca5a5", marginBottom: "1.5rem" }}>
+                    <div className="p-3 mb-6 rounded-lg border border-red-500 bg-red-500/20 text-red-300">
                         {params.error}
                     </div>
                 )}
 
                 <form action={createPracticeAction}>
-                    <div className="form-group">
-                        <label className="form-label">日付</label>
-                        <input type="date" name="date" className="form-control" required autoFocus />
+                    {/* 日付 */}
+                    <div className="form-group mb-4">
+                        <label className="form-label block mb-1">日付</label>
+                        <input
+                            type="date"
+                            name="date"
+                            className="form-control w-full"
+                            required
+                            autoFocus
+                        />
                     </div>
-                    <div className="form-group">
-                        <label className="form-label">時間 (例: 19:00 - 21:00)</label>
+
+                    {/* 時間 */}
+                    <div className="form-group mb-4">
+                        <label className="form-label block mb-1">時間 (例: 19:00 - 21:00)</label>
                         <input
                             type="text"
                             name="time"
-                            className="form-control"
+                            className="form-control w-full"
                             list="time-options"
                             placeholder="12:30 - 17:00"
                             required
@@ -48,12 +59,14 @@ export default async function NewPracticePage({
                             <option value="15:00 - 19:00" />
                         </datalist>
                     </div>
-                    <div className="form-group">
-                        <label className="form-label">練習場所</label>
+
+                    {/* 場所 */}
+                    <div className="form-group mb-6">
+                        <label className="form-label block mb-1">練習場所</label>
                         <input
                             type="text"
                             name="location"
-                            className="form-control"
+                            className="form-control w-full"
                             list="location-options"
                             placeholder="例: 市民体育館"
                             required
@@ -64,7 +77,11 @@ export default async function NewPracticePage({
                         </datalist>
                     </div>
 
-                    <button type="submit" className="btn btn-primary" style={{ width: "100%", marginTop: "1.5rem" }}>
+                    {/* 登録ボタン */}
+                    <button
+                        type="submit"
+                        className="btn btn-primary w-full py-2"
+                    >
                         登録
                     </button>
                 </form>
