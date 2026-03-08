@@ -10,51 +10,57 @@ export default function RegisterForm({ practiceId }: { practiceId: string }) {
 
     return (
         <form action={actionWithId}>
-            <div className="form-group">
-                <label className="form-label">参加人数</label>
+            {/* 参加人数 */}
+            <div className="form-group mb-6">
+                <label className="form-label block mb-1">参加人数</label>
                 <select
                     name="headcount"
-                    className="form-control"
+                    className="form-control w-full"
                     value={headcount}
                     onChange={(e) => setHeadcount(parseInt(e.target.value, 10))}
                 >
-                    {[1, 2, 3, 4, 5, 6].map(n => (
-                        <option key={n} value={n}>{n}名</option>
+                    {[1, 2, 3, 4, 5, 6].map((n) => (
+                        <option key={n} value={n}>
+                            {n}名
+                        </option>
                     ))}
                 </select>
             </div>
 
-            <div className="form-group">
-                <label className="form-label">参加者氏名</label>
+            {/* 参加者氏名 */}
+            <div className="form-group mb-6">
+                <label className="form-label block mb-2">参加者氏名</label>
+
                 {Array.from({ length: headcount }).map((_, i) => (
                     <input
                         key={i}
                         type="text"
                         name="name"
-                        className="form-control"
+                        className="form-control w-full mb-2"
                         placeholder={i === 0 ? "代表者氏名" : `同行者氏名 ${i}`}
                         required
-                        style={{ marginBottom: "0.5rem" }}
                     />
                 ))}
             </div>
 
-            <div className="form-group">
-                <label className="form-label">確認・変更用パスワード</label>
+            {/* パスワード */}
+            <div className="form-group mb-8">
+                <label className="form-label block mb-1">確認・変更用パスワード</label>
                 <input
                     type="password"
                     name="password"
-                    className="form-control"
+                    className="form-control w-full"
                     placeholder="半角英数字"
                     required
                     minLength={4}
                 />
-                <small style={{ color: "var(--text-secondary)", marginTop: "0.5rem", display: "block" }}>
+                <small className="text-gray-300 mt-2 block text-sm">
                     申し込み後の内容変更や、抽選結果の確認に必要となります。忘れないようにしてください。
                 </small>
             </div>
 
-            <button type="submit" className="btn btn-primary" style={{ width: "100%", marginTop: "1.5rem" }}>
+            {/* 送信ボタン */}
+            <button type="submit" className="btn btn-primary w-full py-2">
                 登録を確認する
             </button>
         </form>
