@@ -19,7 +19,7 @@ export default function RegisterForm({ practiceId }: { practiceId: string }) {
                     value={headcount}
                     onChange={(e) => setHeadcount(parseInt(e.target.value, 10))}
                 >
-                    {[1, 2, 3, 4, 5, 6].map((n) => (
+                    {[1, 2, 3, 4, 5].map((n) => (
                         <option key={n} value={n}>
                             {n}名
                         </option>
