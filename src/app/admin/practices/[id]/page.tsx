@@ -5,6 +5,8 @@ import { notFound } from "next/navigation"
 import DeleteButton from "@/components/DeleteButton"
 import { checkAdminAuth } from "@/lib/adminAuth"
 import { redirect } from "next/navigation"
+import WinnerListToggle from "./WinnerListToggle";
+
 
 
 export const dynamic = 'force-dynamic'
@@ -71,8 +73,8 @@ export default async function AdminPracticeDetails({
 
                     <span
                         className={`px-2 py-1 rounded text-sm font-semibold ${isPublished
-                                ? "bg-green-500/20 text-green-400"
-                                : "bg-amber-500/20 text-amber-400"
+                            ? "bg-green-500/20 text-green-400"
+                            : "bg-amber-500/20 text-amber-400"
                             }`}
                     >
                         {isPublished ? "公開済 (結果発表)" : "募集受付中"}
@@ -118,6 +120,7 @@ export default async function AdminPracticeDetails({
                     </div>
                 )}
             </div>
+            {isPublished && <WinnerListToggle winners={winners} />}
 
             {/* 当選者・落選者 or 申込者一覧 */}
             <div className="glass-panel p-6 rounded-xl mb-8">

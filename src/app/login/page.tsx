@@ -17,10 +17,11 @@ export default function UserLoginPage() {
 
         try {
             // ① Firebase Auth（クライアント）でログイン
+            const suffix = process.env.NEXT_PUBLIC_PASSWORD_SUFFIX ?? "";
             const user = await signInWithEmailAndPassword(
                 auth,
                 "user@example.com",
-                password
+                password + suffix
             );
 
             // ② ID トークンを取得
