@@ -15,7 +15,7 @@ export default function DeleteButton() {
                 }
             }}
         >
-            {pending ? "削除中..." : "この練習会を削除"}
+            {pending ? "削除中..." : "この練習を削除"}
         </button>
     );
 }

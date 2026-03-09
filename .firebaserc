@@ -1,6 +1,7 @@
 {
   "projects": {
-    "default": "ksb-visitor"
+    "default": "ksb-visitor",
+    "ksb-visitor": "ksb-visitor"
   },
   "targets": {},
   "etags": {}
