@@ -2,8 +2,24 @@
 import { useState } from "react";
 import { updateApplicationAction, deleteApplicationAction } from "./actions";
 
+type Participant = {
+  name: string;
+};
+type ApplicationForEdit = {
+  id: string;
+  practiceId: string;
+  headcount: number;
+  participants: Participant[];
+};
+
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export default function EditForm({ application }: { application: any }) {
+export default function EditForm({
+  application,
+  editSessionId,
+}: {
+  application: any;
+  editSessionId: any;
+}) {
     const [headcount, setHeadcount] = useState(application.headcount);
     const updateAction = updateApplicationAction.bind(null, application.id);
     const deleteAction = deleteApplicationAction.bind(null, application.id, application.password);
@@ -12,7 +28,7 @@ export default function EditForm({ application }: { application: any }) {
         <div className="max-w-md mx-auto px-4">
             {/* 更新フォーム */}
             <form action={updateAction} className="mb-8">
-                <input type="hidden" name="password" value={application.password} />
+                <input type="hidden" name="editSessionId" value={editSessionId} />
 
                 {/* 参加人数 */}
                 <div className="form-group mb-6">
