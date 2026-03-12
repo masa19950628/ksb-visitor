@@ -1,6 +1,8 @@
 import { initializeApp, getApps, cert } from "firebase-admin/app";
 import { getFirestore, Timestamp } from "firebase-admin/firestore";
 import { toDate } from "./date"
+import { randomUUID } from "crypto"
+
 
 
 function convertTimestamps(obj: unknown): unknown {
@@ -45,7 +47,40 @@ export const collections = {
     practices: 'practices',
     applications: 'applications',
     participants: 'participants',
+    sessions: 'editSessions',
 };
+
+// 簡易認証用のセッションを作成
+type EditSession = {
+  applicationId: string;
+  practiceId: string;
+  purpose: "edit";
+  expiresAt: number;
+  createdAt: number;
+};
+export const createEditSession = async (
+  applicationId: string,
+  practiceId: string,
+): Promise<string> => {
+  const db = getDb();
+  const sessionId = randomUUID();
+
+  const session: EditSession = {
+    applicationId,
+    practiceId,
+    purpose: "edit",
+    createdAt: Date.now(),
+    expiresAt: Date.now() + 30 * 60 * 1000, // 30分
+  };
+
+  await db.collection(collections.sessions).doc(sessionId).set(session);
+
+  return sessionId;
+};
+export async function deleteEditSession(sessionId: string): Promise<void> {
+  const db = getDb();
+  await db.collection(collections.sessions).doc(sessionId).delete();
+}
 
 export interface Practice {
     id: string;
@@ -326,34 +361,91 @@ export async function createApplication(
     return appRef.id;
 }
 
-export async function verifyApplication(practiceId: string, name: string, password: string) {
-    const db = getDb();
-    // This is more complex in Firestore because we can't join on name
-    // 1. Get all applications for this practice with this password
-    const appSnapshot = await db.collection(collections.applications)
-        .where('practiceId', '==', practiceId)
-        .where('password', '==', password)
-        .get();
-
-    for (const appDoc of appSnapshot.docs) {
-        // 2. Check if any participant matches the name
-        const pSnapshot = await db.collection(collections.participants)
-            .where('applicationId', '==', appDoc.id)
-            .where('name', '==', name)
-            .limit(1)
-            .get();
-
-        if (!pSnapshot.empty) {
-            const raw = appDoc.data();
-            const data = convertTimestamps(raw) as Record<string, unknown>;
-            return {
-                id: appDoc.id,
-                ...data,
-            } as Application;
-        }
+type VerifyApplicationResult =
+  | {
+      ok: true;
+      application: Application;
+      editSessionId: string;
     }
+  | {
+      ok: false;
+      application: null;
+      editSessionId: null;
+    };
+export async function verifyApplication(
+  practiceId: string,
+  name: string,
+  password: string,
+): Promise<VerifyApplicationResult> {
+  const db = getDb();
 
-    return null;
+  const appSnapshot = await db
+    .collection(collections.applications)
+    .where("practiceId", "==", practiceId)
+    .where("password", "==", password)
+    .get();
+
+  for (const appDoc of appSnapshot.docs) {
+    const pSnapshot = await db
+      .collection(collections.participants)
+      .where("applicationId", "==", appDoc.id)
+      .where("name", "==", name)
+      .limit(1)
+      .get();
+
+    if (!pSnapshot.empty) {
+      const raw = appDoc.data();
+      const data = convertTimestamps(raw) as Record<string, unknown>;
+
+      const application = {
+        id: appDoc.id,
+        ...data,
+      } as Application;
+
+      const editSessionId = await createEditSession(appDoc.id, practiceId);
+
+      return {
+        ok: true,
+        application,
+        editSessionId,
+      };
+    }
+  }
+
+  return {
+    ok: false,
+    application: null,
+    editSessionId: null,
+  };
+}
+
+type EditSessionDoc = {
+  applicationId: string;
+  practiceId: string;
+  purpose: "edit";
+  expiresAt: number;
+  createdAt: number;
+};
+
+export async function verifyEditSession(
+  sessionId: string,
+  applicationId: string,
+  practiceId: string,
+): Promise<boolean> {
+  const db = getDb();
+
+  const sessionDoc = await db.collection(collections.sessions).doc(sessionId).get();
+  if (!sessionDoc.exists) return false;
+
+  const data = sessionDoc.data() as EditSessionDoc | undefined;
+  if (!data) return false;
+
+  if (data.purpose !== "edit") return false;
+  if (data.applicationId !== applicationId) return false;
+  if (data.practiceId !== practiceId) return false;
+  if (data.expiresAt < Date.now()) return false;
+
+  return true;
 }
 
 export async function getApplicationById(id: string) {

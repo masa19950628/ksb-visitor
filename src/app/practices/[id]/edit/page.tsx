@@ -1,4 +1,4 @@
-import { getPracticeById, getApplicationById } from "@/lib/firestore"
+import { getPracticeById, verifyEditSession } from "@/lib/firestore"
 import Link from "next/link"
 import { verifyApplicationAction } from "./actions"
 import EditForm from "./EditForm"
@@ -10,11 +10,11 @@ export default async function EditApplicationPage({
     searchParams
 }: {
     params: Promise<{ id: string }>,
-    searchParams: Promise<{ error?: string, appId?: string, token?: string, name?: string }>
+    searchParams: Promise<{ error?: string, appId?: string, session?: string, name?: string }>
 }) {
     const { id } = await params
     const searchParamsObj = await searchParams
-    const { error, appId, token, name } = searchParamsObj
+    const { error, appId, session, name } = searchParamsObj
 
     const practice = await getPracticeById(id)
     if (!practice || practice.status !== "DRAFT") {
@@ -33,10 +33,9 @@ export default async function EditApplicationPage({
         )
     }
 
-    if (appId && token) {
-        const app = await getApplicationById(appId)
-
-        if (app && app.password === token) {
+    if (appId && session) {
+        const ok = await verifyEditSession(session, appId, id);
+        if (ok) {
             // Fetch participants for EditForm
             const appsWithParticipants = await getPracticeById(id);
             const appWithParticipants = appsWithParticipants?.applications?.find(a => a.id === appId);
@@ -47,7 +46,7 @@ export default async function EditApplicationPage({
                         <h1 className="page-title text-center mb-8">申し込み内容の変更・削除</h1>
 
                         <div className="glass-panel p-6 rounded-xl">
-                            <EditForm application={appWithParticipants} />
+                            <EditForm application={appWithParticipants} editSessionId={session} />
                         </div>
                     </div>
 
