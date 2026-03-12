@@ -46,7 +46,7 @@ export default async function EditApplicationPage({
                         <h1 className="page-title text-center mb-8">申し込み内容の変更・削除</h1>
 
                         <div className="glass-panel p-6 rounded-xl">
-                            <EditForm application={appWithParticipants} />
+                            <EditForm application={appWithParticipants} editSessionId={session} />
                         </div>
                     </div>
 

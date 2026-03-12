@@ -3,26 +3,25 @@ import { useState } from "react";
 import { updateApplicationAction, deleteApplicationAction } from "./actions";
 
 type Participant = {
-  name: string;
+    name: string;
 };
 type ApplicationForEdit = {
-  id: string;
-  practiceId: string;
-  headcount: number;
-  participants: Participant[];
+    id: string;
+    practiceId: string;
+    headcount: number;
+    participants: Participant[];
+};
+type EditFormProps = {
+    application: ApplicationForEdit;
+    editSessionId: string;
 };
 
+
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export default function EditForm({
-  application,
-  editSessionId,
-}: {
-  application: any;
-  editSessionId: any;
-}) {
+export default function EditForm({ application, editSessionId }: EditFormProps) {
     const [headcount, setHeadcount] = useState(application.headcount);
     const updateAction = updateApplicationAction.bind(null, application.id);
-    const deleteAction = deleteApplicationAction.bind(null, application.id, application.password);
+    const deleteAction = deleteApplicationAction.bind(null, application.id, editSessionId);
 
     return (
         <div className="max-w-md mx-auto px-4">

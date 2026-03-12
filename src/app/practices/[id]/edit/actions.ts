@@ -57,7 +57,7 @@ export async function updateApplicationAction(appId: string, formData: FormData)
         names.filter(n => n.trim() !== "")
     )
     await deleteEditSession(editSessionId)
-    redirect("/?success=updated")
+    redirect(`/practices/${app.practiceId}?success=updated`)
 }
 
 export async function deleteApplicationAction(appId: string, editSessionId: string) {
@@ -79,5 +79,5 @@ export async function deleteApplicationAction(appId: string, editSessionId: stri
     await deleteApplication(appId)
     await deleteEditSession(editSessionId)
 
-    redirect("/?success=deleted")
+    redirect(`/practices/${app.practiceId}?success=deleted`)
 }
