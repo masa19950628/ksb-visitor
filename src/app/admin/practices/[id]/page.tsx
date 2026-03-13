@@ -1,10 +1,9 @@
 import { getPracticeById } from "@/lib/firestore"
 import Link from "next/link"
-import { publishAndRunLottery, deletePracticeAction } from "./actions"
+import { publishAndRunLottery, deletePracticeAction, updateCapacityOnly } from "./actions"
 import { notFound } from "next/navigation"
 import DeleteButton from "@/components/DeleteButton"
 import { checkAdminAuth } from "@/lib/adminAuth"
-import { redirect } from "next/navigation"
 import WinnerListToggle from "./WinnerListToggle";
 
 
@@ -120,6 +119,36 @@ export default async function AdminPracticeDetails({
                     </div>
                 )}
             </div>
+            {/* ★ 公開済み定員変更フォーム */}
+            {isPublished && (
+                <form
+                    action={updateCapacityOnly.bind(null, practice.id)}
+                    className="bg-black/20 p-6 rounded-lg border border-blue-400 mt-6"
+                >
+                    <h3 className="text-blue-400 mb-3">定員の再設定</h3>
+                    <p className="text-sm text-gray-300 mb-4">
+                        既存の順位に従って当選者を再判定します。抽選は行いません。
+                    </p>
+
+                    <div className="flex flex-col md:flex-row gap-4 items-end">
+                        <div className="flex-1 w-full">
+                            <label className="form-label">新しい定員</label>
+                            <input
+                                type="number"
+                                name="capacity"
+                                className="form-control w-full"
+                                defaultValue={practice.capacity ?? ""}
+                                required
+                            />
+                        </div>
+
+                        <button type="submit" className="btn btn-primary whitespace-nowrap w-full md:w-auto">
+                            定員を更新する
+                        </button>
+                    </div>
+                </form>
+            )}
+
             {isPublished && <WinnerListToggle winners={winners} />}
 
             {/* 当選者・落選者 or 申込者一覧 */}
