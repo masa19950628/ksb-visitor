@@ -55,7 +55,7 @@ export default function RegisterForm({ practiceId }: { practiceId: string }) {
                     minLength={4}
                 />
                 <small className="text-gray-300 mt-2 block text-sm">
-                    申し込み後の内容変更や、抽選結果の確認に必要となります。忘れないようにしてください。
+                    申し込み後の内容変更に必要となります。忘れないようにしてください。
                 </small>
             </div>
 
