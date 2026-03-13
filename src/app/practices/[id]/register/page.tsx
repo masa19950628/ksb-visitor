@@ -1,5 +1,4 @@
 import { getPracticeById } from "@/lib/firestore"
-import { notFound } from "next/navigation"
 import Link from "next/link"
 import RegisterForm from "./RegisterForm"
 

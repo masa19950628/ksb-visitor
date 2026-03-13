@@ -1,4 +1,4 @@
-import { initializeApp, getApps, cert } from "firebase-admin/app";
+import { initializeApp, getApps } from "firebase-admin/app";
 import { getFirestore, Timestamp } from "firebase-admin/firestore";
 import { toDate } from "./date"
 import { randomUUID } from "crypto"
@@ -52,34 +52,34 @@ export const collections = {
 
 // 簡易認証用のセッションを作成
 type EditSession = {
-  applicationId: string;
-  practiceId: string;
-  purpose: "edit";
-  expiresAt: number;
-  createdAt: number;
+    applicationId: string;
+    practiceId: string;
+    purpose: "edit";
+    expiresAt: number;
+    createdAt: number;
 };
 export const createEditSession = async (
-  applicationId: string,
-  practiceId: string,
+    applicationId: string,
+    practiceId: string,
 ): Promise<string> => {
-  const db = getDb();
-  const sessionId = randomUUID();
+    const db = getDb();
+    const sessionId = randomUUID();
 
-  const session: EditSession = {
-    applicationId,
-    practiceId,
-    purpose: "edit",
-    createdAt: Date.now(),
-    expiresAt: Date.now() + 30 * 60 * 1000, // 30分
-  };
+    const session: EditSession = {
+        applicationId,
+        practiceId,
+        purpose: "edit",
+        createdAt: Date.now(),
+        expiresAt: Date.now() + 30 * 60 * 1000, // 30分
+    };
 
-  await db.collection(collections.sessions).doc(sessionId).set(session);
+    await db.collection(collections.sessions).doc(sessionId).set(session);
 
-  return sessionId;
+    return sessionId;
 };
 export async function deleteEditSession(sessionId: string): Promise<void> {
-  const db = getDb();
-  await db.collection(collections.sessions).doc(sessionId).delete();
+    const db = getDb();
+    await db.collection(collections.sessions).doc(sessionId).delete();
 }
 
 export interface Practice {
@@ -268,6 +268,67 @@ export async function runLottery(practiceId: string, capacity: number) {
 }
 
 
+// 既存の抽選結果を、capacity に合わせて再計算する
+export async function recalculateWinnersByRank(practiceId: string, capacity: number) {
+    const db = getDb();
+    const batch = db.batch();
+
+    const appsSnapshot = await db.collection(collections.applications)
+        .where('practiceId', '==', practiceId)
+        .get();
+
+    const applications = appsSnapshot.docs.map(doc => ({
+        ...doc.data(),
+        id: doc.id,
+    })) as Application[];
+
+    // 既存 rank の昇順で並べる
+    const sorted = applications.sort((a, b) => (a.rank ?? 9999) - (b.rank ?? 9999));
+
+    let currentTotal = 0;
+    const winners: { id: string; rank: number }[] = [];
+    const losers: { id: string; rank: number }[] = [];
+
+    sorted.forEach(app => {
+        const rank = app.rank ?? 9999;
+
+        if (currentTotal < capacity) {
+            winners.push({ id: app.id, rank });
+            currentTotal += app.headcount;
+        } else {
+            losers.push({ id: app.id, rank });
+        }
+    });
+
+    // Update practice
+    const practiceRef = db.collection(collections.practices).doc(practiceId);
+    batch.update(practiceRef, {
+        capacity,
+        updatedAt: new Date(),
+        status: "PUBLISHED", // 公開状態は維持
+    });
+
+    // Update winners
+    winners.forEach(({ id, rank }) => {
+        batch.update(db.collection(collections.applications).doc(id), {
+            isWinner: true,
+            rank, // 既存 rank をそのまま使う
+            updatedAt: new Date(),
+        });
+    });
+
+    // Update losers
+    losers.forEach(({ id, rank }) => {
+        batch.update(db.collection(collections.applications).doc(id), {
+            isWinner: false,
+            rank,
+            updatedAt: new Date(),
+        });
+    });
+
+    await batch.commit();
+}
+
 // Admin Operations
 export async function getAdminByUsername(username: string) {
     const db = getDb();
@@ -362,90 +423,90 @@ export async function createApplication(
 }
 
 type VerifyApplicationResult =
-  | {
-      ok: true;
-      application: Application;
-      editSessionId: string;
+    | {
+        ok: true;
+        application: Application;
+        editSessionId: string;
     }
-  | {
-      ok: false;
-      application: null;
-      editSessionId: null;
+    | {
+        ok: false;
+        application: null;
+        editSessionId: null;
     };
 export async function verifyApplication(
-  practiceId: string,
-  name: string,
-  password: string,
+    practiceId: string,
+    name: string,
+    password: string,
 ): Promise<VerifyApplicationResult> {
-  const db = getDb();
+    const db = getDb();
 
-  const appSnapshot = await db
-    .collection(collections.applications)
-    .where("practiceId", "==", practiceId)
-    .where("password", "==", password)
-    .get();
+    const appSnapshot = await db
+        .collection(collections.applications)
+        .where("practiceId", "==", practiceId)
+        .where("password", "==", password)
+        .get();
 
-  for (const appDoc of appSnapshot.docs) {
-    const pSnapshot = await db
-      .collection(collections.participants)
-      .where("applicationId", "==", appDoc.id)
-      .where("name", "==", name)
-      .limit(1)
-      .get();
+    for (const appDoc of appSnapshot.docs) {
+        const pSnapshot = await db
+            .collection(collections.participants)
+            .where("applicationId", "==", appDoc.id)
+            .where("name", "==", name)
+            .limit(1)
+            .get();
 
-    if (!pSnapshot.empty) {
-      const raw = appDoc.data();
-      const data = convertTimestamps(raw) as Record<string, unknown>;
+        if (!pSnapshot.empty) {
+            const raw = appDoc.data();
+            const data = convertTimestamps(raw) as Record<string, unknown>;
 
-      const application = {
-        id: appDoc.id,
-        ...data,
-      } as Application;
+            const application = {
+                id: appDoc.id,
+                ...data,
+            } as Application;
 
-      const editSessionId = await createEditSession(appDoc.id, practiceId);
+            const editSessionId = await createEditSession(appDoc.id, practiceId);
 
-      return {
-        ok: true,
-        application,
-        editSessionId,
-      };
+            return {
+                ok: true,
+                application,
+                editSessionId,
+            };
+        }
     }
-  }
 
-  return {
-    ok: false,
-    application: null,
-    editSessionId: null,
-  };
+    return {
+        ok: false,
+        application: null,
+        editSessionId: null,
+    };
 }
 
 type EditSessionDoc = {
-  applicationId: string;
-  practiceId: string;
-  purpose: "edit";
-  expiresAt: number;
-  createdAt: number;
+    applicationId: string;
+    practiceId: string;
+    purpose: "edit";
+    expiresAt: number;
+    createdAt: number;
 };
 
 export async function verifyEditSession(
-  sessionId: string,
-  applicationId: string,
-  practiceId: string,
+    sessionId: string,
+    applicationId: string,
+    practiceId: string,
 ): Promise<boolean> {
-  const db = getDb();
+    const db = getDb();
 
-  const sessionDoc = await db.collection(collections.sessions).doc(sessionId).get();
-  if (!sessionDoc.exists) return false;
+    const sessionDoc = await db.collection(collections.sessions).doc(sessionId).get();
+    if (!sessionDoc.exists) return false;
 
-  const data = sessionDoc.data() as EditSessionDoc | undefined;
-  if (!data) return false;
+    const data = sessionDoc.data() as EditSessionDoc | undefined;
+    if (!data) return false;
 
-  if (data.purpose !== "edit") return false;
-  if (data.applicationId !== applicationId) return false;
-  if (data.practiceId !== practiceId) return false;
-  if (data.expiresAt < Date.now()) return false;
+    if (data.purpose !== "edit") return false;
+    if (data.applicationId !== applicationId) return false;
+    if (data.practiceId !== practiceId) return false;
+    if (data.expiresAt < Date.now()) return false;
 
-  return true;
+    return true;
 }
 
 export async function getApplicationById(id: string) {

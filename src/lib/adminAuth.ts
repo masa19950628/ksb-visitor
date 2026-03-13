@@ -1,6 +1,4 @@
-import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
-import { getAuth } from "firebase-admin/auth";
 import { verifySession } from "@/lib/auth"
 
 

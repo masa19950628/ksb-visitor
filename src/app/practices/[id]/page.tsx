@@ -1,7 +1,6 @@
 import { getPracticeById } from "@/lib/firestore"
 import Link from "next/link"
 import { notFound } from "next/navigation"
-import { Timestamp } from "firebase-admin/firestore";
 
 export const dynamic = 'force-dynamic'
 

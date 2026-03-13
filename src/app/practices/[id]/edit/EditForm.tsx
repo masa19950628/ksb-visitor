@@ -17,7 +17,6 @@ type EditFormProps = {
 };
 
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export default function EditForm({ application, editSessionId }: EditFormProps) {
     const [headcount, setHeadcount] = useState(application.headcount);
     const updateAction = updateApplicationAction.bind(null, application.id);
