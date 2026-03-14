@@ -7,8 +7,8 @@ export default function Header() {
                 ✨ KSB練習ビジター申し込み
             </Link>
             <nav>
-                <Link href="/admin/login" className="btn btn-secondary" style={{ padding: '0.4rem 0.8rem', fontSize: '0.85rem' }}>
-                    管理者ログイン
+                <Link href="/admin" className="btn btn-secondary" style={{ padding: '0.4rem 0.8rem', fontSize: '0.85rem' }}>
+                    管理者ページへ
                 </Link>
             </nav>
         </header>
