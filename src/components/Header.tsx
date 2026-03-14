@@ -4,7 +4,7 @@ export default function Header() {
     return (
         <header className="app-header">
             <Link href="/" className="brand-title">
-                ✨ KSB練習ビジター申し込みシステム
+                ✨ KSB練習ビジター申し込み
             </Link>
             <nav>
                 <Link href="/admin/login" className="btn btn-secondary" style={{ padding: '0.4rem 0.8rem', fontSize: '0.85rem' }}>

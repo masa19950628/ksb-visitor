@@ -5,6 +5,7 @@ import { notFound } from "next/navigation"
 import DeleteButton from "@/components/DeleteButton"
 import { checkAdminAuth } from "@/lib/adminAuth"
 import WinnerListToggle from "./WinnerListToggle";
+import CapacityForm from "./CapacityForm";
 
 
 
@@ -82,34 +83,13 @@ export default async function AdminPracticeDetails({
 
                 {/* 抽選フォーム or 結果 */}
                 {!isPublished ? (
-                    <form
+                    <CapacityForm
                         action={publishAction}
-                        className="bg-black/20 p-6 rounded-lg border border-blue-400"
-                    >
-                        <h3 className="text-blue-400 mb-3">抽選の実行と結果公開</h3>
-                        <p className="text-sm text-gray-300 mb-4">
-                            現在の申し込み状況からランダムに当選者を決定し、結果を公開します。一度公開すると元に戻せません。
-                        </p>
-
-                        <div className="flex flex-col md:flex-row gap-4 items-end">
-                            <div className="flex-1 w-full">
-                                <label className="form-label">
-                                    最終定員 (グループ単位で当選するため、この数値を多少オーバーする場合があります)
-                                </label>
-                                <input
-                                    type="number"
-                                    name="capacity"
-                                    className="form-control w-full"
-                                    defaultValue={practice.capacity ?? ""}
-                                    required
-                                />
-                            </div>
-
-                            <button type="submit" className="btn btn-primary whitespace-nowrap w-full md:w-auto">
-                                抽選して公開する
-                            </button>
-                        </div>
-                    </form>
+                        title="抽選の実行と結果公開"
+                        description="現在の申し込み状況からランダムに当選者を決定し、結果を公開します。一度公開すると元に戻せません。"
+                        buttonText="抽選して公開する"
+                        defaultCapacity={practice.capacity}
+                    />
                 ) : (
                     <div className="p-4 rounded-lg border border-green-500/40 bg-green-500/10">
                         <h3 className="text-green-400 mb-1">🎉 抽選完了</h3>
@@ -121,32 +101,14 @@ export default async function AdminPracticeDetails({
             </div>
             {/* ★ 公開済み定員変更フォーム */}
             {isPublished && (
-                <form
+                <CapacityForm
                     action={updateCapacityOnly.bind(null, practice.id)}
-                    className="bg-black/20 p-6 rounded-lg border border-blue-400 mt-6"
-                >
-                    <h3 className="text-blue-400 mb-3">定員の再設定</h3>
-                    <p className="text-sm text-gray-300 mb-4">
-                        既存の順位に従って当選者を再判定します。抽選は行いません。
-                    </p>
-
-                    <div className="flex flex-col md:flex-row gap-4 items-end">
-                        <div className="flex-1 w-full">
-                            <label className="form-label">新しい定員</label>
-                            <input
-                                type="number"
-                                name="capacity"
-                                className="form-control w-full"
-                                defaultValue={practice.capacity ?? ""}
-                                required
-                            />
-                        </div>
-
-                        <button type="submit" className="btn btn-primary whitespace-nowrap w-full md:w-auto">
-                            定員を更新する
-                        </button>
-                    </div>
-                </form>
+                    title="定員の再設定"
+                    description="既存の順位に従って当選者を再判定します。抽選は行いません。"
+                    buttonText="定員を更新する"
+                    defaultCapacity={practice.capacity}
+                    className="mt-6"
+                />
             )}
 
             {isPublished && <WinnerListToggle winners={winners} />}
