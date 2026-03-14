@@ -4,7 +4,7 @@ export default function PrivacyPolicyPage() {
             <h1 className="text-3xl font-bold mb-6">プライバシーポリシー</h1>
 
             <p className="mb-4 leading-relaxed">
-                KSB練習ビジター申し込みシステム（以下、「当サイト」）では、利用者の個人情報を適切に取り扱うため、
+                KSB練習ビジター申し込みサイト（以下、「当サイト」）では、利用者の個人情報を適切に取り扱うため、
                 以下の通りプライバシーポリシーを定めます。
             </p>
 
