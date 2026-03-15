@@ -23,18 +23,20 @@ export default function WinnerListToggle({ winners }: WinnerListToggleProps) {
                 <div className="mt-4">
                     <h3 className="text-green-300 mb-3 font-semibold">当選者リスト</h3>
 
-                    <ul className="space-y-2 text-gray-200 text-sm">
-                        {winners.flatMap((app) =>
-                            app.participants.map((p) => (
-                                <li
-                                    key={p.id}
-                                    className="p-3 rounded-lg bg-gray-800/40 border border-gray-700"
-                                >
-                                    {p.name}
-                                </li>
-                            ))
-                        )}
-                    </ul>
+                    <div className="p-4 rounded-lg bg-gray-800/40 border border-gray-700">
+                        <ul className="space-y-2 text-gray-200 text-sm">
+                            {winners.flatMap((app) =>
+                                app.participants.map((p) => (
+                                    <li
+                                        key={p.id}
+                                        className="py-1 border-b border-gray-700/50 last:border-0 last:pb-0"
+                                    >
+                                        {p.name}
+                                    </li>
+                                ))
+                            )}
+                        </ul>
+                    </div>
                 </div>
             )}
         </div>
