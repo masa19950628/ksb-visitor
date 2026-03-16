@@ -122,7 +122,7 @@ export async function getPractices() {
         .orderBy('date', 'desc')
         .get();
 
-    return Promise.all(
+    const practices = await Promise.all(
         snapshot.docs.map(async (doc) => {
             const data = doc.data();
 
@@ -147,6 +147,14 @@ export async function getPractices() {
             return practice;
         })
     );
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const upcoming = practices.filter(p => p.date >= today).sort((a, b) => a.date.getTime() - b.date.getTime());
+    const past = practices.filter(p => p.date < today).sort((a, b) => b.date.getTime() - a.date.getTime());
+
+    return [...upcoming, ...past];
 }
 
 export async function getPracticeById(id: string) {
