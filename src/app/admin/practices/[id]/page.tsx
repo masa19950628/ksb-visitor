@@ -1,11 +1,12 @@
 import { getPracticeById } from "@/lib/firestore"
 import Link from "next/link"
-import { publishAndRunLottery, deletePracticeAction, updateCapacityOnly } from "./actions"
+import { publishAndRunLottery, deletePracticeAction, updateCapacityOnly, deleteApplicationAction } from "./actions"
 import { notFound } from "next/navigation"
 import DeleteButton from "@/components/DeleteButton"
 import { checkAdminAuth } from "@/lib/adminAuth"
 import WinnerListToggle from "./WinnerListToggle";
 import CapacityForm from "./CapacityForm";
+import SpecialVisitorForm from "./SpecialVisitorForm";
 
 
 
@@ -16,12 +17,12 @@ export default async function AdminPracticeDetails({
     searchParams
 }: {
     params: Promise<{ id: string }>
-    searchParams: Promise<{ error?: string }>
+    searchParams: Promise<{ error?: string, success?: string }>
 }) {
     // adminチェック
     await checkAdminAuth()
     const { id } = await params
-    const { error } = await searchParams
+    const { error, success } = await searchParams
 
     const practice = await getPracticeById(id)
 
@@ -53,10 +54,20 @@ export default async function AdminPracticeDetails({
                 </Link>
             </div>
 
-            {/* エラー表示 */}
+            {/* メッセージ表示 */}
             {error && (
                 <div className="p-3 mb-6 rounded-lg border border-red-500 bg-red-500/20 text-red-300">
                     {error}
+                </div>
+            )}
+            {success === 'registered' && (
+                <div className="p-3 mb-6 rounded-lg border border-green-500 bg-green-500/20 text-green-300">
+                    特別枠を登録しました
+                </div>
+            )}
+            {success === 'deleted' && (
+                <div className="p-3 mb-6 rounded-lg border border-red-500 bg-red-500/20 text-red-300">
+                    特別枠を削除しました
                 </div>
             )}
 
@@ -83,13 +94,16 @@ export default async function AdminPracticeDetails({
 
                 {/* 抽選フォーム or 結果 */}
                 {!isPublished ? (
-                    <CapacityForm
-                        action={publishAction}
-                        title="抽選の実行と結果公開"
-                        description="現在の申し込み状況からランダムに当選者を決定し、結果を公開します。一度公開すると元に戻せません。"
-                        buttonText="抽選して公開する"
-                        defaultCapacity={practice.capacity}
-                    />
+                    <div className="space-y-6">
+                        <SpecialVisitorForm practiceId={practice.id} />
+                        <CapacityForm
+                            action={publishAction}
+                            title="抽選の実行と結果公開"
+                            description="現在の申し込み状況からランダムに当選者を決定し、結果を公開します。"
+                            buttonText="抽選して公開する"
+                            defaultCapacity={practice.capacity}
+                        />
+                    </div>
                 ) : (
                     <div className="p-4 rounded-lg border border-green-500/40 bg-green-500/10">
                         <h3 className="text-green-400 mb-1">🎉 抽選完了</h3>
@@ -127,7 +141,7 @@ export default async function AdminPracticeDetails({
                                     className="relative p-4 rounded-lg bg-white/5 border-l-4 border-green-400 break-words"
                                 >
                                     <div className="absolute top-2 right-2 bg-green-500/20 px-2 py-1 rounded text-xs font-bold text-green-300">
-                                        {app.rank}
+                                        {app.rank === 0 ? "特別" : app.rank}
                                     </div>
 
                                     <div className="font-bold text-white mb-1">
@@ -137,6 +151,16 @@ export default async function AdminPracticeDetails({
                                     <div className="text-sm text-gray-300">
                                         同行者: {app.participants.slice(1).map((p) => p.name).join(", ") || "なし"}
                                     </div>
+
+                                    {app.rank === 0 && (
+                                        <div className="mt-4 pt-4 border-t border-white/10 text-right">
+                                            <form action={deleteApplicationAction.bind(null, practice.id, app.id)}>
+                                                <button type="submit" className="text-xs text-red-400 hover:text-red-300 flex items-center justify-end ml-auto gap-1">
+                                                    <span>🗑️</span> 特別枠を削除
+                                                </button>
+                                            </form>
+                                        </div>
+                                    )}
                                 </div>
                             ))}
                         </div>
@@ -182,6 +206,16 @@ export default async function AdminPracticeDetails({
                                     <div className="text-sm text-gray-300">
                                         同行者: {app.participants.slice(1).map((p) => p.name).join(", ") || "なし"}
                                     </div>
+
+                                    {app.rank === 0 && (
+                                        <div className="mt-4 pt-4 border-t border-white/10 text-right">
+                                            <form action={deleteApplicationAction.bind(null, practice.id, app.id)}>
+                                                <button type="submit" className="text-xs text-red-400 hover:text-red-300 flex items-center justify-end ml-auto gap-1">
+                                                    <span>🗑️</span> 特別枠を削除
+                                                </button>
+                                            </form>
+                                        </div>
+                                    )}
                                 </div>
                             ))}
                         </div>

@@ -16,10 +16,8 @@ export default function CapacityForm({ action, title, description, buttonText, d
 
     const [totalCapacity, setTotalCapacity] = useState<number | "">("");
     const [memberCount, setMemberCount] = useState<number | "">("");
-    const [specialGuestCount, setSpecialGuestCount] = useState<number | "">(0);
-
     const calculatedCapacity =
-        (Number(totalCapacity) || 0) - (Number(memberCount) || 0) - (Number(specialGuestCount) || 0);
+        (Number(totalCapacity) || 0) - (Number(memberCount) || 0);
 
     return (
         <form action={action} className={`bg-black/20 p-6 rounded-lg border border-blue-400 ${className}`}>
@@ -47,7 +45,7 @@ export default function CapacityForm({ action, title, description, buttonText, d
                         onChange={() => setCalcType("calculate")}
                         className="w-4 h-4 text-blue-500 bg-transparent border-gray-500 focus:ring-blue-500 focus:ring-2"
                     />
-                    <span className="text-sm font-medium">全体定員数、KSB人数、ビジター特別枠人数からビジター定員数を算出する</span>
+                    <span className="text-sm font-medium">全体定員数、KSB人数からビジター定員数を算出する</span>
                 </label>
             </div>
 
@@ -67,7 +65,7 @@ export default function CapacityForm({ action, title, description, buttonText, d
                     </div>
                 ) : (
                     <div className="flex-1 w-full space-y-4">
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
                                 <label className="form-label text-xs mb-1 block text-gray-300">全体定員数 <span className="text-red-400">*</span></label>
                                 <input
@@ -88,16 +86,6 @@ export default function CapacityForm({ action, title, description, buttonText, d
                                     onChange={(e) => setMemberCount(e.target.value === "" ? "" : Number(e.target.value))}
                                     min="0"
                                     required
-                                />
-                            </div>
-                            <div>
-                                <label className="form-label text-xs mb-1 block text-gray-300">ビジター特別枠人数</label>
-                                <input
-                                    type="number"
-                                    className="form-control w-full text-sm"
-                                    value={specialGuestCount}
-                                    onChange={(e) => setSpecialGuestCount(e.target.value === "" ? "" : Number(e.target.value))}
-                                    min="0"
                                 />
                             </div>
                         </div>
