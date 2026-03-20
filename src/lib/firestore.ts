@@ -228,15 +228,23 @@ export async function runLottery(practiceId: string, capacity: number) {
         id: doc.id,
     })) as Application[];
 
-    // Shuffle
-    const shuffled = [...applications].sort(() => Math.random() - 0.5);
+    // 特別枠(rank: 0)と一般枠を分離
+    const specials = applications.filter(app => app.rank === 0);
+    const regulars = applications.filter(app => app.rank !== 0);
+
+    // 一般枠のみシャッフル
+    const shuffledRegulars = [...regulars].sort(() => Math.random() - 0.5);
+
+    // 特別枠を先頭に配置し、その後にシャッフルされた一般枠を結合
+    const sorted = [...specials, ...shuffledRegulars];
 
     let currentTotal = 0;
     const winners: { id: string; rank: number }[] = [];
     const losers: { id: string; rank: number }[] = [];
 
-    shuffled.forEach((app, index) => {
-        const rank = index + 1; // ← 抽選順位
+    sorted.forEach((app, index) => {
+        // 特別枠は 0 を維持、それ以外は 1 から順位付け
+        const rank = app.rank === 0 ? 0 : (index - specials.length + 1);
 
         if (currentTotal < capacity) {
             winners.push({ id: app.id, rank });
@@ -412,6 +420,39 @@ export async function createApplication(
         ...data,
         practiceId,
         isWinner: null,
+        createdAt: now,
+        updatedAt: now,
+    });
+
+    participants.forEach(name => {
+        const pRef = db.collection(collections.participants).doc();
+        batch.set(pRef, {
+            applicationId: appRef.id,
+            name,
+            createdAt: now,
+            updatedAt: now,
+        });
+    });
+
+    await batch.commit();
+    return appRef.id;
+}
+
+export async function createSpecialApplication(
+    practiceId: string,
+    data: Omit<Application, 'id' | 'practiceId' | 'createdAt' | 'updatedAt' | 'isWinner' | 'rank'>,
+    participants: string[]
+) {
+    const db = getDb();
+    const now = new Date();
+    const batch = db.batch();
+
+    const appRef = db.collection(collections.applications).doc();
+    batch.set(appRef, {
+        ...data,
+        practiceId,
+        isWinner: true,
+        rank: 0,
         createdAt: now,
         updatedAt: now,
     });
