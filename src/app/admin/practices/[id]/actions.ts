@@ -65,7 +65,7 @@ export async function registerSpecialVisitorAction(practiceId: string, formData:
         practiceId,
         {
             headcount,
-            password: "ADMIN_REGISTERED", // 管理者登録なので固定
+            password: process.env.ADMIN_APPLICATION_ADMIN_PASSWORD!, // 管理者登録なので固定
         },
         names.filter(n => n.trim() !== "")
     )
