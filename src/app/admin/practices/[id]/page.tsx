@@ -1,6 +1,6 @@
 import { getPracticeById } from "@/lib/firestore"
 import Link from "next/link"
-import { publishAndRunLottery, deletePracticeAction, updateCapacityOnly, deleteApplicationAction } from "./actions"
+import { publishAndRunLottery, deletePracticeAction, updateCapacityOnly, editApplicationByAdminAction } from "./actions"
 import { notFound } from "next/navigation"
 import DeleteButton from "@/components/DeleteButton"
 import { checkAdminAuth } from "@/lib/adminAuth"
@@ -20,7 +20,7 @@ export default async function AdminPracticeDetails({
     searchParams: Promise<{ error?: string, success?: string }>
 }) {
     // adminチェック
-    await checkAdminAuth()
+    const { role } = await checkAdminAuth()
     const { id } = await params
     const { error, success } = await searchParams
 
@@ -95,14 +95,16 @@ export default async function AdminPracticeDetails({
                 {/* 抽選フォーム or 結果 */}
                 {!isPublished ? (
                     <div className="space-y-6">
-                        <SpecialVisitorForm practiceId={practice.id} />
-                        <CapacityForm
-                            action={publishAction}
-                            title="抽選の実行と結果公開"
-                            description="現在の申し込み状況からランダムに当選者を決定し、結果を公開します。"
-                            buttonText="抽選して公開する"
-                            defaultCapacity={practice.capacity}
-                        />
+                        <SpecialVisitorForm practiceId={practice.id} role={role} />
+                        {role === 'ADMIN' && (
+                            <CapacityForm
+                                action={publishAction}
+                                title="抽選の実行と結果公開"
+                                description="現在の申し込み状況からランダムに当選者を決定し、結果を公開します。"
+                                buttonText="抽選して公開する"
+                                defaultCapacity={practice.capacity}
+                            />
+                        )}
                     </div>
                 ) : (
                     <div className="p-4 rounded-lg border border-green-500/40 bg-green-500/10">
@@ -114,7 +116,7 @@ export default async function AdminPracticeDetails({
                 )}
             </div>
             {/* ★ 公開済み定員変更フォーム */}
-            {isPublished && (
+            {isPublished && role === 'ADMIN' && (
                 <CapacityForm
                     action={updateCapacityOnly.bind(null, practice.id)}
                     title="定員の再設定"
@@ -151,16 +153,6 @@ export default async function AdminPracticeDetails({
                                     <div className="text-sm text-gray-300">
                                         同行者: {app.participants.slice(1).map((p) => p.name).join(", ") || "なし"}
                                     </div>
-
-                                    {app.rank === 0 && (
-                                        <div className="mt-4 pt-4 border-t border-white/10 text-right">
-                                            <form action={deleteApplicationAction.bind(null, practice.id, app.id)}>
-                                                <button type="submit" className="text-xs text-red-400 hover:text-red-300 flex items-center justify-end ml-auto gap-1">
-                                                    <span>🗑️</span> 特別枠を削除
-                                                </button>
-                                            </form>
-                                        </div>
-                                    )}
                                 </div>
                             ))}
                         </div>
@@ -206,12 +198,12 @@ export default async function AdminPracticeDetails({
                                     <div className="text-sm text-gray-300">
                                         同行者: {app.participants.slice(1).map((p) => p.name).join(", ") || "なし"}
                                     </div>
-
-                                    {app.rank === 0 && (
-                                        <div className="mt-4 pt-4 border-t border-white/10 text-right">
-                                            <form action={deleteApplicationAction.bind(null, practice.id, app.id)}>
-                                                <button type="submit" className="text-xs text-red-400 hover:text-red-300 flex items-center justify-end ml-auto gap-1">
-                                                    <span>🗑️</span> 特別枠を削除
+                                    {app.rank === 0 && (role === 'ADMIN' || role === 'MEMBER') && (
+                                        <div className="mt-4 pt-4 border-t border-white/10 flex items-center justify-end gap-3 h-8">
+                                            {/* 編集ボタン */}
+                                            <form action={editApplicationByAdminAction.bind(null, practice.id, app.id)}>
+                                                <button type="submit" className="text-xs text-blue-400 hover:text-blue-300 flex items-center gap-1">
+                                                    <span>✏️</span> 特別枠の編集・削除
                                                 </button>
                                             </form>
                                         </div>
@@ -224,11 +216,13 @@ export default async function AdminPracticeDetails({
             </div>
 
             {/* 削除ボタン */}
-            <div className="text-right">
-                <form action={deleteAction}>
-                    <DeleteButton />
-                </form>
-            </div>
+            {role === 'ADMIN' && (
+                <div className="text-right">
+                    <form action={deleteAction}>
+                        <DeleteButton />
+                    </form>
+                </div>
+            )}
         </div>
     )
 }

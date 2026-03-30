@@ -20,7 +20,9 @@ export async function verifyApplicationAction(practiceId: string, formData: Form
         redirect(`/practices/${practiceId}/${actionType}?error=${encodeURIComponent("認証に失敗しました")}`)
     }
 
-    redirect(`/practices/${practiceId}/${actionType}?appId=${result.application.id}&session=${result.editSessionId}`)
+    const fromAdmin = formData.get("fromAdmin") === "true";
+    const redirectUrl = `/practices/${practiceId}/${actionType}?appId=${result.application.id}&session=${result.editSessionId}${fromAdmin ? "&admin=true" : ""}`;
+    redirect(redirectUrl)
 }
 
 export async function updateApplicationAction(appId: string, formData: FormData) {
@@ -57,10 +59,16 @@ export async function updateApplicationAction(appId: string, formData: FormData)
         names.filter(n => n.trim() !== "")
     )
     await deleteEditSession(editSessionId)
-    redirect(`/practices/${app.practiceId}?success=updated`)
+
+    const fromAdmin = formData.get("fromAdmin") === "true";
+    if (fromAdmin) {
+        redirect(`/admin/practices/${app.practiceId}?success=updated`);
+    } else {
+        redirect(`/practices/${app.practiceId}?success=updated`)
+    }
 }
 
-export async function deleteApplicationAction(appId: string, editSessionId: string) {
+export async function deleteApplicationAction(appId: string, editSessionId: string, formData: FormData) {
     const app = await getApplicationById(appId)
     if (!app) {
         redirect(`/?error=${encodeURIComponent("申し込みが見つかりません")}`)
@@ -79,5 +87,10 @@ export async function deleteApplicationAction(appId: string, editSessionId: stri
     await deleteApplication(appId)
     await deleteEditSession(editSessionId)
 
-    redirect(`/practices/${app.practiceId}?success=deleted`)
+    const fromAdmin = formData.get("fromAdmin") === "true";
+    if (fromAdmin) {
+        redirect(`/admin/practices/${app.practiceId}?success=deleted`);
+    } else {
+        redirect(`/practices/${app.practiceId}?success=deleted`)
+    }
 }

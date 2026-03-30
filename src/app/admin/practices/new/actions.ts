@@ -6,7 +6,8 @@ import { redirect } from "next/navigation"
 
 export async function createPracticeAction(formData: FormData) {
     // adminチェック
-    await checkAdminAuth()
+    const { role } = await checkAdminAuth()
+    if (role !== 'ADMIN') return;
 
 
     const dateStr = formData.get("date") as string

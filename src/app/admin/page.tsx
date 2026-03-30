@@ -6,7 +6,7 @@ export const dynamic = 'force-dynamic'
 
 export default async function AdminDashboard() {
     // adminチェック
-    await checkAdminAuth()
+    const { role } = await checkAdminAuth()
 
     const practices = await getPractices()
 
@@ -15,9 +15,11 @@ export default async function AdminDashboard() {
             <div className="flex justify-between items-center mb-8">
                 <h1 className="page-title m-0">管理ダッシュボード</h1>
 
-                <Link href="/admin/practices/new" className="btn btn-primary">
-                    + 練習を新規作成
-                </Link>
+                {role === 'ADMIN' && (
+                    <Link href="/admin/practices/new" className="btn btn-primary">
+                        + 練習を新規作成
+                    </Link>
+                )}
             </div>
             {/* ▼ 既存の practices.map(...) ▼ */}
             <div className="flex flex-col gap-4">

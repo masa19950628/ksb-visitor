@@ -14,10 +14,11 @@ type ApplicationForEdit = {
 type EditFormProps = {
     application: ApplicationForEdit;
     editSessionId: string;
+    fromAdmin?: boolean;
 };
 
 
-export default function EditForm({ application, editSessionId }: EditFormProps) {
+export default function EditForm({ application, editSessionId, fromAdmin }: EditFormProps) {
     const [headcount, setHeadcount] = useState(application.headcount);
     const updateAction = updateApplicationAction.bind(null, application.id);
     const deleteAction = deleteApplicationAction.bind(null, application.id, editSessionId);
@@ -27,6 +28,7 @@ export default function EditForm({ application, editSessionId }: EditFormProps) 
             {/* 更新フォーム */}
             <form action={updateAction} className="mb-8">
                 <input type="hidden" name="editSessionId" value={editSessionId} />
+                {fromAdmin && <input type="hidden" name="fromAdmin" value="true" />}
 
                 {/* 参加人数 */}
                 <div className="form-group mb-6">
@@ -79,6 +81,7 @@ export default function EditForm({ application, editSessionId }: EditFormProps) 
                         e.preventDefault();
                 }}
             >
+                <input type="hidden" name="fromAdmin" value={fromAdmin ? "true" : "false"} />
                 <button
                     type="submit"
                     className="btn btn-danger w-full py-2"
