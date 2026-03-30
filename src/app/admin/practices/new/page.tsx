@@ -1,5 +1,6 @@
 import Link from "next/link"
 import { checkAdminAuth } from "@/lib/adminAuth"
+import { redirect } from "next/navigation"
 import NewPracticeForm from "./NewPracticeForm";
 
 export default async function NewPracticePage({
@@ -8,7 +9,10 @@ export default async function NewPracticePage({
     searchParams: Promise<{ error?: string }>
 }) {
     // adminチェック
-    await checkAdminAuth()
+    const { role } = await checkAdminAuth()
+    if (role !== 'ADMIN') {
+        redirect("/admin")
+    }
 
     const params = await searchParams;
 

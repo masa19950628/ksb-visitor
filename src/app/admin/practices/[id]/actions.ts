@@ -1,11 +1,12 @@
 "use server"
 
-import { getPracticeById, runLottery, deletePractice, recalculateWinnersByRank, deleteApplication } from "@/lib/firestore"
+import { getPracticeById, runLottery, deletePractice, recalculateWinnersByRank, createEditSession, getApplicationWithParticipants } from "@/lib/firestore"
 import { checkAdminAuth } from "@/lib/adminAuth"
 import { redirect } from "next/navigation"
 
 export async function publishAndRunLottery(practiceId: string, formData: FormData) {
-    await checkAdminAuth()
+    const { role } = await checkAdminAuth()
+    if (role !== 'ADMIN') return;
 
     const capacityStr = formData.get("capacity") as string
     if (!capacityStr) return
@@ -23,13 +24,16 @@ export async function publishAndRunLottery(practiceId: string, formData: FormDat
 }
 
 export async function deletePracticeAction(practiceId: string) {
-    await checkAdminAuth()
+    const { role } = await checkAdminAuth()
+    if (role !== 'ADMIN') return;
+
     await deletePractice(practiceId)
     redirect("/admin")
 }
 
 export async function updateCapacityOnly(practiceId: string, formData: FormData) {
-    await checkAdminAuth();
+    const { role } = await checkAdminAuth();
+    if (role !== 'ADMIN') return;
 
     const capacityStr = formData.get("capacity") as string;
     if (!capacityStr) return;
@@ -44,12 +48,23 @@ export async function updateCapacityOnly(practiceId: string, formData: FormData)
 import { createSpecialApplication } from "@/lib/firestore"
 
 export async function registerSpecialVisitorAction(practiceId: string, formData: FormData) {
-    await checkAdminAuth()
+    const { role } = await checkAdminAuth()
 
     const headcountStr = formData.get("headcount") as string
     const names = formData.getAll("name") as string[]
+    let password = formData.get("password") as string
 
-    if (!headcountStr || names.length === 0) {
+    // MEMBER の場合はパスワード必須
+    if (role === 'MEMBER' && !password) {
+        redirect(`/admin/practices/${practiceId}?error=${encodeURIComponent("パスワードを入力してください")}`)
+    }
+
+    // ADMIN でパスワード未入力の場合はデフォルトを使用
+    if (role === 'ADMIN' && !password) {
+        password = process.env.ADMIN_APPLICATION_ADMIN_PASSWORD!
+    }
+
+    if (!headcountStr || names.length === 0 || !password) {
         redirect(`/admin/practices/${practiceId}?error=${encodeURIComponent("必須項目が入力されていません")}`)
     }
 
@@ -65,7 +80,7 @@ export async function registerSpecialVisitorAction(practiceId: string, formData:
         practiceId,
         {
             headcount,
-            password: process.env.ADMIN_APPLICATION_ADMIN_PASSWORD!, // 管理者登録なので固定
+            password: password,
         },
         names.filter(n => n.trim() !== "")
     )
@@ -73,8 +88,21 @@ export async function registerSpecialVisitorAction(practiceId: string, formData:
     redirect(`/admin/practices/${practiceId}?success=registered`)
 }
 
-export async function deleteApplicationAction(practiceId: string, applicationId: string) {
-    await checkAdminAuth();
-    await deleteApplication(applicationId);
-    redirect(`/admin/practices/${practiceId}?success=deleted`);
+export async function editApplicationByAdminAction(practiceId: string, applicationId: string) {
+    const { role } = await checkAdminAuth();
+
+    const app = await getApplicationWithParticipants(applicationId);
+    const representativeName = app?.participants[0]?.name || "";
+    const nameParam = representativeName ? `&name=${encodeURIComponent(representativeName)}` : "";
+
+    if (role === 'ADMIN') {
+        // ADMIN は編集セッションを作成して即座にリダイレクト
+        // 管理者画面に戻れるよう admin=true を付与
+        const sessionId = await createEditSession(applicationId, practiceId);
+        redirect(`/practices/${practiceId}/edit?appId=${applicationId}&session=${sessionId}&admin=true${nameParam}`);
+    } else if (role === 'MEMBER') {
+        // MEMBER はセッションなしでリダイレクト（パスワード入力を求める）
+        // 管理者画面に戻れるよう admin=true を付与
+        redirect(`/practices/${practiceId}/edit?appId=${applicationId}&admin=true${nameParam}`);
+    }
 }

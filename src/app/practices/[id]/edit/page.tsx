@@ -10,11 +10,12 @@ export default async function EditApplicationPage({
     searchParams
 }: {
     params: Promise<{ id: string }>,
-    searchParams: Promise<{ error?: string, appId?: string, session?: string, name?: string }>
+    searchParams: Promise<{ error?: string, appId?: string, session?: string, name?: string, admin?: string }>
 }) {
     const { id } = await params
     const searchParamsObj = await searchParams
-    const { error, appId, session, name } = searchParamsObj
+    const { error, appId, session, name, admin } = searchParamsObj
+    const fromAdmin = admin === "true"
 
     const practice = await getPracticeById(id)
     if (!practice || practice.status !== "DRAFT") {
@@ -46,7 +47,7 @@ export default async function EditApplicationPage({
                         <h1 className="page-title text-center mb-8">申し込み内容の変更・削除</h1>
 
                         <div className="glass-panel p-6 rounded-xl">
-                            <EditForm application={appWithParticipants} editSessionId={session} />
+                            <EditForm application={appWithParticipants} editSessionId={session} fromAdmin={fromAdmin} />
                         </div>
                     </div>
 
@@ -76,6 +77,7 @@ export default async function EditApplicationPage({
 
                 <form action={verifyAction}>
                     <input type="hidden" name="actionType" value="edit" />
+                    {fromAdmin && <input type="hidden" name="fromAdmin" value="true" />}
 
                     <div className="form-group mb-4">
                         <label className="form-label block mb-1">代表者氏名</label>

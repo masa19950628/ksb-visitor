@@ -2,8 +2,9 @@
 
 import { useState } from "react"
 import { registerSpecialVisitorAction } from "./actions"
+import { Role } from "@/lib/firestore"
 
-export default function SpecialVisitorForm({ practiceId }: { practiceId: string }) {
+export default function SpecialVisitorForm({ practiceId, role }: { practiceId: string, role: Role }) {
     const [headcount, setHeadcount] = useState(1)
 
     const actionWithId = registerSpecialVisitorAction.bind(null, practiceId)
@@ -49,6 +50,28 @@ export default function SpecialVisitorForm({ practiceId }: { practiceId: string 
                         />
                     ))}
                 </div>
+            </div>
+
+            {/* パスワード設定 */}
+            <div className="form-group mb-6 max-w-xs">
+                <label className="form-label text-sm mb-1 block text-purple-300">
+                    パスワード設定 {role === 'MEMBER' && <span className="text-red-400">*</span>}
+                    {role === 'ADMIN' && <span className="text-gray-400 text-[10px] ml-2">(任意)</span>}
+                </label>
+                <input
+                    type="password"
+                    name="password"
+                    className="form-control w-full"
+                    placeholder={role === 'ADMIN' ? "管理者用パスワードを使用" : "英数字4桁以上を推奨"}
+                    required={role === 'MEMBER'}
+                    minLength={role === 'MEMBER' ? 4 : undefined}
+                />
+                <p className="text-[10px] text-gray-400 mt-1">
+                    {role === 'ADMIN' 
+                        ? "※未入力の場合はデフォルトの管理者パスワードが設定されます。"
+                        : "※登録後に自分（参加者）で修正・取消を行う際に必要となります。"
+                    }
+                </p>
             </div>
 
             {/* 送信ボタン */}

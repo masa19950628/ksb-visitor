@@ -34,10 +34,13 @@ function getDb() {
 }
 
 
+export type Role = 'ADMIN' | 'MEMBER';
+
 export interface Admin {
     id: string;
     username: string;
     passwordHash: string;
+    role: Role;
     createdAt: Date;
     updatedAt: Date;
 }
@@ -363,6 +366,19 @@ export async function getAdminByUsername(username: string) {
     } as Admin;
 }
 
+export async function getAdminByUid(uid: string) {
+    const db = getDb();
+    const doc = await db.collection(collections.admins).doc(uid).get();
+
+    if (!doc.exists) return null;
+    const raw = doc.data();
+    const data = convertTimestamps(raw) as Record<string, unknown>;
+    return {
+        ...data,
+        id: doc.id,
+    } as Admin;
+}
+
 // Application Operations
 export async function getApplicationsForPractice(practiceId: string) {
     const db = getDb();
@@ -567,6 +583,30 @@ export async function getApplicationById(id: string) {
         id: doc.id,
         ...data,
     } as Application;
+}
+
+export async function getApplicationWithParticipants(appId: string) {
+    const db = getDb();
+    const appDoc = await db.collection(collections.applications).doc(appId).get();
+    if (!appDoc.exists) return null;
+
+    const data = convertTimestamps(appDoc.data()!) as Record<string, unknown>;
+    const app = {
+        id: appDoc.id,
+        ...data,
+    } as Application;
+
+    const participantsSnapshot = await db.collection(collections.participants)
+        .where('applicationId', '==', appId)
+        .get();
+    
+    const participantsRaw = participantsSnapshot.docs.map((pDoc) => ({
+        id: pDoc.id,
+        ...pDoc.data(),
+    }));
+    const participants = convertTimestamps(participantsRaw) as Participant[];
+
+    return { ...app, participants };
 }
 
 export async function updateApplication(
