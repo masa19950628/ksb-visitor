@@ -1,7 +1,18 @@
 "use client"
 
 import { useState } from "react"
+import { useFormStatus } from "react-dom"
 import { registerSpecialVisitorAction } from "./actions"
+
+function SubmitButton() {
+    const { pending } = useFormStatus()
+
+    return (
+        <button type="submit" className="btn btn-primary px-8" disabled={pending}>
+            {pending ? "処理中..." : "特別枠として登録する"}
+        </button>
+    )
+}
 import { Role } from "@/lib/firestore"
 
 export default function SpecialVisitorForm({ practiceId, role }: { practiceId: string, role: Role }) {
@@ -67,7 +78,7 @@ export default function SpecialVisitorForm({ practiceId, role }: { practiceId: s
                     minLength={role === 'MEMBER' ? 4 : undefined}
                 />
                 <p className="text-[10px] text-gray-400 mt-1">
-                    {role === 'ADMIN' 
+                    {role === 'ADMIN'
                         ? "※未入力の場合はデフォルトの管理者パスワードが設定されます。"
                         : "※登録後に自分（参加者）で修正・取消を行う際に必要となります。"
                     }
@@ -76,9 +87,7 @@ export default function SpecialVisitorForm({ practiceId, role }: { practiceId: s
 
             {/* 送信ボタン */}
             <div className="text-right mt-2">
-                <button type="submit" className="btn btn-primary px-8">
-                    特別枠として登録する
-                </button>
+                <SubmitButton />
             </div>
         </form>
     )

@@ -1,6 +1,25 @@
 "use client";
 import { useState } from "react";
+import { useFormStatus } from "react-dom";
 import { updateApplicationAction, deleteApplicationAction } from "./actions";
+
+function UpdateSubmitButton() {
+    const { pending } = useFormStatus();
+    return (
+        <button type="submit" className="btn btn-primary w-full py-2" disabled={pending}>
+            {pending ? "処理中..." : "更新する"}
+        </button>
+    );
+}
+
+function DeleteSubmitButton() {
+    const { pending } = useFormStatus();
+    return (
+        <button type="submit" className="btn btn-danger w-full py-2" disabled={pending}>
+            {pending ? "処理中..." : "申し込みを取り消す (削除)"}
+        </button>
+    );
+}
 
 type Participant = {
     name: string;
@@ -65,12 +84,7 @@ export default function EditForm({ application, editSessionId, fromAdmin }: Edit
                 </div>
 
                 {/* 更新ボタン */}
-                <button
-                    type="submit"
-                    className="btn btn-primary w-full py-2"
-                >
-                    更新する
-                </button>
+                <UpdateSubmitButton />
             </form>
 
             {/* 削除フォーム */}
@@ -82,12 +96,7 @@ export default function EditForm({ application, editSessionId, fromAdmin }: Edit
                 }}
             >
                 <input type="hidden" name="fromAdmin" value={fromAdmin ? "true" : "false"} />
-                <button
-                    type="submit"
-                    className="btn btn-danger w-full py-2"
-                >
-                    申し込みを取り消す (削除)
-                </button>
+                <DeleteSubmitButton />
             </form>
         </div>
     )
