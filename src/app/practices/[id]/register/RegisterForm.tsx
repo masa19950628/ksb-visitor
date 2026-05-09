@@ -1,7 +1,18 @@
 "use client"
 
 import { useState } from "react"
+import { useFormStatus } from "react-dom"
 import { registerApplicationAction } from "./actions"
+
+function SubmitButton() {
+    const { pending } = useFormStatus()
+
+    return (
+        <button type="submit" className="btn btn-primary w-full py-2" disabled={pending}>
+            {pending ? "処理中..." : "登録を確認する"}
+        </button>
+    )
+}
 
 export default function RegisterForm({ practiceId }: { practiceId: string }) {
     const [headcount, setHeadcount] = useState(1)
@@ -60,9 +71,7 @@ export default function RegisterForm({ practiceId }: { practiceId: string }) {
             </div>
 
             {/* 送信ボタン */}
-            <button type="submit" className="btn btn-primary w-full py-2">
-                登録を確認する
-            </button>
+            <SubmitButton />
         </form>
     )
 }

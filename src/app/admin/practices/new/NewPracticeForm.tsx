@@ -1,7 +1,17 @@
 "use client";
 
 import { useState } from "react";
+import { useFormStatus } from "react-dom";
 import { createPracticeAction } from "./actions";
+
+function SubmitButton() {
+    const { pending } = useFormStatus();
+    return (
+        <button type="submit" className="btn btn-primary w-full py-2" disabled={pending}>
+            {pending ? "処理中..." : "登録"}
+        </button>
+    );
+}
 
 export default function NewPracticeForm() {
     const [locationType, setLocationType] = useState("kame");
@@ -103,9 +113,7 @@ export default function NewPracticeForm() {
                 />
             </div>
 
-            <button type="submit" className="btn btn-primary w-full py-2">
-                登録
-            </button>
+            <SubmitButton />
         </form>
     );
 }
