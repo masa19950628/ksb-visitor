@@ -1,8 +1,0 @@
-{
-  "projects": {
-    "default": "ksb-visitor",
-    "ksb-visitor": "ksb-visitor"
-  },
-  "targets": {},
-  "etags": {}
-}
